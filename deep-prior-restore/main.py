@@ -50,7 +50,7 @@ def _train_deep_prior(corrupted_image, print_progress_tick, show_img_output_tick
 
 	learning_rate = 0.001  # Learning rate
 	num_epochs = _approximate_num_iter(corrupted_image)  # To try and avoid overfit, since 64x64 is really small.
-	num_channels_down = [6] * 5  # Number of 'filters'\'channels' for each 'down' layer
+	num_channels_down = [64] * 5  # Number of 'filters'\'channels' for each 'down' layer
 	num_channels_up = [64] * 5  # Number of 'filters'\'channels' for each 'up' layer
 	num_channels_skip = [4] * 5  # Number of 'filters'\'channels' for each 'skip' layer
 	kernels_size_down = [3] * 5  # Size of kernel for each 'down' layer

@@ -18,8 +18,8 @@ PARSER.add_argument("--batch_size", type=int, default=128, required=False, help=
 PARSER.add_argument("--log_device_placement", type=bool, default=False, help="Whether or not to print Tensorflow's "
 																			 "device placement")
 ARGS = PARSER.parse_args()
-tf.logging.set_verbosity('0' if ARGS.log_device_placement else '3')
-# os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0' if ARGS.log_device_placement else '3'  # To suppress Tensorflow's messages
+# tf.logging.set_verbosity('0' if ARGS.log_device_placement else '3')
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0' if ARGS.log_device_placement else '3'  # To suppress Tensorflow's messages
 NUM_EPOCHS_PER_DECAY = 350.0      # Epochs after which learning rate decays.
 LEARNING_RATE_DECAY_FACTOR = 0.1  # Learning rate decay factor.
 INITIAL_LEARNING_RATE = 0.1       # Initial learning rate.
