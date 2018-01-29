@@ -3,9 +3,10 @@ import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 from time import time
 from sys import stdout
+import os
 
 
-NUM_EPOCHS = 50000
+NUM_EPOCHS = 100000
 BATCH_SIZE = 128
 VALIDATION_SIZE = 4096
 LOG_FREQUENCY = 25
@@ -16,6 +17,10 @@ NUM_EPOCHS_PER_DECAY = NUM_EPOCHS // 4
 
 train_data, validation_data, test_data = input_data.read_data_sets("MNIST_data", one_hot=True, reshape=False,
 																   validation_size=VALIDATION_SIZE)
+
+
+log_device_placement = False
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0' if log_device_placement else '3'  # To suppress Tensorflow's messages
 
 
 def build_model(images, bIsTraining):
