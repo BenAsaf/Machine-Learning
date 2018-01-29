@@ -14,7 +14,7 @@ LOG_FREQUENCY = 25
 INITIAL_LEARNING_RATE = 0.01
 DECAY_RATE = 0.1
 NUM_EPOCHS_PER_DECAY = NUM_EPOCHS // 4
-
+MODEL_CKPT_DIR = os.path.join(".", "model")
 train_data, validation_data, test_data = input_data.read_data_sets("MNIST_data", one_hot=True, reshape=False,
 																   validation_size=VALIDATION_SIZE)
 
@@ -133,7 +133,7 @@ def train():
 																			   avg_validation_acc))
 				self._train_losses, self._train_accuracies = np.array([]), np.array([])
 
-	with tf.train.MonitoredTrainingSession(checkpoint_dir="./model/",
+	with tf.train.MonitoredTrainingSession(checkpoint_dir=MODEL_CKPT_DIR,
 			scaffold=scaffold,
 			hooks=[tf.train.StopAtStepHook(last_step=NUM_EPOCHS),
 				   tf.train.NanTensorHook(loss_op),
@@ -157,7 +157,7 @@ def load_and_test():
 
 	saver = tf.train.Saver()
 	with tf.Session() as sess:
-		saver.restore(sess, tf.train.latest_checkpoint("./model/"))
+		saver.restore(sess, tf.train.latest_checkpoint(MODEL_CKPT_DIR))
 
 		is_correct_prediction = tf.cast(tf.reshape(tf.equal(tf.argmax(logits, axis=1), tf.argmax(labels, axis=1)), []),
 										dtype=tf.int16)
