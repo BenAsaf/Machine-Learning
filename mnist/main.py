@@ -12,7 +12,7 @@ LOG_FREQUENCY = 25
 
 INITIAL_LEARNING_RATE = 0.01
 DECAY_RATE = 0.1
-NUM_EPOCHS_PER_DECAY = 30
+NUM_EPOCHS_PER_DECAY = NUM_EPOCHS // 4
 
 train_data, validation_data, test_data = input_data.read_data_sets("MNIST_data", one_hot=True, reshape=False,
 																   validation_size=VALIDATION_SIZE)
@@ -65,8 +65,8 @@ def get_accuracy_op(labels, logits):
 
 
 def get_train_op(loss_op, global_step):
-	num_batches_per_epoch = train_data.num_examples / BATCH_SIZE
-	decay_steps = int(num_batches_per_epoch * NUM_EPOCHS_PER_DECAY)
+	# num_batches_per_epoch = train_data.num_examples / BATCH_SIZE
+	decay_steps = NUM_EPOCHS_PER_DECAY
 	lr = tf.train.exponential_decay(INITIAL_LEARNING_RATE, global_step, decay_steps, DECAY_RATE, staircase=True)
 	# lr = tf.Print(lr, [lr], "Learning rate: ")
 	update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
@@ -123,7 +123,7 @@ def train():
 				avg_validation_acc = sess.run(accuracy_op, feed_dict={images: X, labels: Y, bIsTraining: False})
 				avg_train_loss = np.mean(self._train_losses, dtype=np.float32)
 				avg_train_acc = np.mean(self._train_accuracies, dtype=np.float32)
-				print("%3.2f sec | %6d | %11d | %10.6f | %5.2f%% | %5.2f%%" % (duration, step, step * BATCH_SIZE,
+				print("%3.2f sec | %9d | %11d | %10.6f | %5.2f%% | %5.2f%%" % (duration, step, step * BATCH_SIZE,
 																			   avg_train_loss, avg_train_acc,
 																			   avg_validation_acc))
 				self._train_losses, self._train_accuracies = np.array([]), np.array([])
