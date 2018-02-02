@@ -1,0 +1,4 @@
+Simple polynomial regression. https://en.wikipedia.org/wiki/Polynomial_regression
+
+The model is simply a Weights vector.
+It generates random data and tries to estimate the y values.

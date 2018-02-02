@@ -2,8 +2,8 @@ import tensorflow as tf
 import numpy as np
 
 # Generating random data
-n_observations = 300
-DATA = np.linspace(0, 10, n_observations)
+n_observations = 1200
+DATA = np.linspace(0, 6, n_observations)
 np.random.shuffle(DATA)
 LABELS = np.sin(DATA) + np.random.uniform(-0.5, 0.5, n_observations)
 DATA = DATA.astype(np.float64, copy=False)
