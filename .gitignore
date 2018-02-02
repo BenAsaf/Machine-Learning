@@ -2,7 +2,3 @@
 *.iml
 *.idea/
 *__pycache__/
-*.txt
-*.bin
-*.html
-*.gz
