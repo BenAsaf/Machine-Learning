@@ -1,4 +1,5 @@
 __pycache__/
 .idea/
-./model
-./cifar-100-binary*
+model/
+cifar-100-binary/
+cifar-100-binary.tar.gz
