@@ -1,4 +1,5 @@
-Simple polynomial regression. https://en.wikipedia.org/wiki/Polynomial_regression
+Simple polynomial regression.
+https://en.wikipedia.org/wiki/Polynomial_regression
 
-The model is simply a Weights vector.
-It generates random data and tries to estimate the y values.
+The data is arranged in a vandermonde matrix X and the model defines weights matrix W and a biases.
+The model simply estimates the y values using: XW+b.
