@@ -22,7 +22,6 @@ train_data, validation_data, test_data = input_data.read_data_sets("MNIST_data",
 log_device_placement = False
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0' if log_device_placement else '3'  # To suppress Tensorflow's messages
 
-
 def build_model(images, bIsTraining):
 	with tf.name_scope("Model"):
 		nn = tf.layers.batch_normalization(images, training=bIsTraining)

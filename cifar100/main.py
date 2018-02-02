@@ -1,8 +1,8 @@
 import tensorflow as tf
 from time import time
 import numpy as np
-import cifar100_dataset
-from cifar100_model import get_model, get_accuracy_op, get_loss_op, get_train_op, is_prediction_correct_op
+import nn_dataset
+from nn_model import get_model, get_accuracy_op, get_loss_op, get_train_op, is_prediction_correct_op
 import os
 import argparse
 from sys import stdout
@@ -30,8 +30,8 @@ def train_net():
 	bIsTraining = tf.placeholder(tf.bool)
 	global_step = tf.train.get_or_create_global_step()
 
-	images_train, labels_train = cifar100_dataset.input_fn(True, ARGS.base_dir, ARGS.batch_size, None)
-	images_valid, labels_valid = cifar100_dataset.input_fn(False, ARGS.base_dir, ARGS.batch_size, None)
+	images_train, labels_train = nn_dataset.input_fn(True, ARGS.base_dir, ARGS.batch_size, None)
+	images_valid, labels_valid = nn_dataset.input_fn(False, ARGS.base_dir, ARGS.batch_size, None)
 	images = tf.cond(pred=bIsTraining, true_fn=lambda: images_train, false_fn=lambda: images_valid)
 	labels = tf.cond(pred=bIsTraining, true_fn=lambda: labels_train, false_fn=lambda: labels_valid)
 
@@ -92,9 +92,9 @@ def train_net():
 def test_model():
 	tf.reset_default_graph()
 
-	NUM_VALIDATION_IMGS = cifar100_dataset.NUM_IMAGES["validation"]
+	NUM_VALIDATION_IMGS = nn_dataset.NUM_IMAGES["validation"]
 
-	images, labels = cifar100_dataset.input_fn(is_training=False, data_dir=ARGS.base_dir, batch_size=1, num_epochs=1)
+	images, labels = nn_dataset.input_fn(is_training=False, data_dir=ARGS.base_dir, batch_size=1, num_epochs=1)
 	bIsTraining = tf.placeholder(tf.bool)
 
 	logits = get_model(images, bIsTraining)
@@ -121,7 +121,7 @@ def test_model():
 
 
 def main():
-	cifar100_dataset.maybe_download_and_extract(ARGS.base_dir)
+	nn_dataset.maybe_download_and_extract(ARGS.base_dir)
 	train_net()
 	test_model()  # Test model on the entire test examples.
 

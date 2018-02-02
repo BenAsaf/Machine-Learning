@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
 from time import time
-from dpr_model import build_deep_prior_model, get_loss_op, get_train_op, get_input
+from nn_model import build_deep_prior_model, get_loss_op, get_train_op, get_input
 import os
 
 log_device_placement = False
