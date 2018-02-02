@@ -1,4 +1,4 @@
 __pycache__/
 .idea/
-./model
-./cifar-10*
+./model/
+./cifar-10*/
