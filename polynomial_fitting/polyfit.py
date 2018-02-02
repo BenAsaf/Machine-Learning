@@ -44,10 +44,10 @@ def polynomial_fitting(degree):
 	X = tf.cond(bIsTraining, true_fn=lambda: X_train, false_fn=lambda: X_test)
 	Y = tf.cond(bIsTraining, true_fn=lambda: Y_train, false_fn=lambda: Y_test)
 
-	prediction = get_model(X, degree)
-	loss_op = get_loss_op(Y, prediction)
+	predictions = get_model(X, degree)
+	loss_op = get_loss_op(Y, predictions)
 	train_op = get_train_op(loss_op, global_step, ARGS)
-	accuracy_op = get_accuracy_op(Y, prediction)
+	total_correct_preds, accuracy_op = tf.metrics.accuracy(Y, predictions)
 	scaffold = tf.train.Scaffold(init_op=tf.global_variables_initializer(),
 								 local_init_op=tf.local_variables_initializer())
 
