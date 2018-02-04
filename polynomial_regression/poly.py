@@ -56,10 +56,9 @@ def train_model(degree):
 	global_step = tf.train.get_or_create_global_step()
 	predictions = get_model(X, degree)
 	loss_op = get_loss_op(Y, predictions)
-	train_op = get_train_op(loss_op, global_step, ARGS)
+	train_op = get_train_op(loss_op, global_step)
 	# total_correct_preds, accuracy_op = tf.metrics.accuracy(Y, predictions)  Loss ~= Accuracy here
-	scaffold = tf.train.Scaffold(init_op=tf.global_variables_initializer(),
-								 local_init_op=tf.local_variables_initializer())
+	scaffold = tf.train.Scaffold(init_op=tf.global_variables_initializer(), local_init_op=tf.local_variables_initializer())
 
 	class _LoggerHook(tf.train.SessionRunHook):
 		"""Logs loss and runtime."""

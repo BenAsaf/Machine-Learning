@@ -117,10 +117,16 @@ def test_model():
 	stdout.write("Accuracy: %3.3f%%" % (100*num_correct/NUM_VALIDATION_IMGS))
 
 
+def test_silly():
+
+	X = tf.placeholder(tf.float32, )
+
+
 def main():
 	nn_dataset.maybe_download_and_extract(ARGS.base_dir)
 	train_net()
 	test_model()  # Test model on the entire test examples.
+	# test_silly()
 
 
 if __name__ == '__main__':

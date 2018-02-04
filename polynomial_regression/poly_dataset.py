@@ -2,35 +2,31 @@ import tensorflow as tf
 import numpy as np
 
 # Generating random data
-n_observations = 1200
-DATA = np.linspace(0, 6, n_observations)
-np.random.shuffle(DATA)
-LABELS = np.sin(DATA) + np.random.uniform(-0.5, 0.5, n_observations)
-DATA = DATA.astype(np.float64, copy=False)
-LABELS = LABELS.astype(np.float64, copy=False).reshape([-1, 1])
-
-# Will be used for matplotlib to output the same scale
-MIN_X_DATA, MAX_X_DATA = np.min(DATA), np.max(DATA)
-MIN_Y_LABELS, MAX_Y_LABELS = np.min(LABELS), np.max(LABELS)
+_N_OBSERVATIONS = 1200
+_DATA = np.linspace(0, 6, _N_OBSERVATIONS)
+np.random.shuffle(_DATA)
+_LABELS = np.sin(_DATA) + np.random.uniform(-0.5, 0.5, _N_OBSERVATIONS)
+_DATA = _DATA.astype(np.float64, copy=False)
+_LABELS = _LABELS.astype(np.float64, copy=False).reshape([-1, 1])
 
 # 3 equal sizes of training,validation and test
-num_of_partitions = 3  # Three divisions of the total data to: Training, Validation and Test
-partitions = [int((len(DATA) / num_of_partitions) * i) for i in range(1, num_of_partitions)]
-TRAIN_DATA, TRAIN_LABELS = DATA[:partitions[0]], LABELS[:partitions[0]]
-VALID_DATA, VALID_LABELS = DATA[partitions[0]:partitions[1]], LABELS[partitions[0]:partitions[1]]
-TEST_DATA, TEST_LABELS = DATA[partitions[1]:], LABELS[partitions[1]:]
+_NUM_PARTITIONS = 3  # Three divisions of the total data to: Training, Validation and Test
+_PARTITIONS = [int((len(_DATA) / _NUM_PARTITIONS) * i) for i in range(1, _NUM_PARTITIONS)]
+_TRAIN_DATA, _TRAIN_LABELS = _DATA[:_PARTITIONS[0]], _LABELS[:_PARTITIONS[0]]
+_VALID_DATA, _VALID_LABELS = _DATA[_PARTITIONS[0]:_PARTITIONS[1]], _LABELS[_PARTITIONS[0]:_PARTITIONS[1]]
+_TEST_DATA, _TEST_LABELS = _DATA[_PARTITIONS[1]:], _LABELS[_PARTITIONS[1]:]
 
 
 def get_input(data_type, batch_size, num_epochs):
 	if data_type == "train":
-		X = tf.constant(TRAIN_DATA)
-		Y = tf.constant(TRAIN_LABELS)
+		X = tf.constant(_TRAIN_DATA)
+		Y = tf.constant(_TRAIN_LABELS)
 	elif data_type == "test":
-		X = tf.constant(TEST_DATA)
-		Y = tf.constant(TEST_LABELS)
+		X = tf.constant(_TEST_DATA)
+		Y = tf.constant(_TEST_LABELS)
 	elif data_type == "validation":
-		X = tf.constant(VALID_DATA)
-		Y = tf.constant(VALID_LABELS)
+		X = tf.constant(_VALID_DATA)
+		Y = tf.constant(_VALID_LABELS)
 	else:
 		raise ValueError("Unknown data type: %s. Expected one of: {train, test, validation}" % data_type)
 	XS_dataset = tf.data.Dataset.from_tensor_slices(X)
@@ -39,10 +35,7 @@ def get_input(data_type, batch_size, num_epochs):
 	dataset = tf.data.Dataset.zip((XS_dataset, YS_dataset))
 
 	if data_type == "train":
-		dataset = dataset.shuffle(buffer_size=TRAIN_DATA.size)
-
-	# dataset = dataset.map(parse_record)
-	# dataset = dataset.map(lambda image, label: (preprocess_image(image, is_training), label))
+		dataset = dataset.shuffle(buffer_size=_TRAIN_DATA.size)
 
 	dataset = dataset.prefetch(2 * batch_size)
 
@@ -58,6 +51,5 @@ def get_input(data_type, batch_size, num_epochs):
 	iterator = dataset.make_one_shot_iterator()
 
 	xs, ys = iterator.get_next()
-	# print("wtf %s" % data_type, TRAIN_DATA[0], TRAIN_LABELS[0])
 	return xs, ys
 
