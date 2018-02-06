@@ -1,20 +1,20 @@
 import tensorflow as tf
 from time import time
 import numpy as np
-import nn_dataset
-from nn_model import get_model, get_accuracy_op, get_loss_op, get_train_op, is_prediction_correct_op
 import os
 import argparse
 from sys import stdout
+import nn_dataset
+from nn_model import get_model, get_accuracy_op, get_loss_op, get_train_op, is_prediction_correct_op
 
-
+_base_dir = "."
 PARSER = argparse.ArgumentParser()
 
-PARSER.add_argument("--model_dir", type=str, default="./model")
-PARSER.add_argument("--base_dir", type=str, default=".", help="Where to output stuff")
+PARSER.add_argument("--base_dir", type=str, default=_base_dir, help="Where to output stuff")
+PARSER.add_argument("--model_dir", type=str, default=os.path.join(_base_dir, "model"))
 PARSER.add_argument("--log_frequency", type=int, default=25, help="How often to print to the console")
-PARSER.add_argument("--num_epochs", type=int, default=105000, help="How many epochs to train the model")
-PARSER.add_argument("--batch_size", type=int, default=128, required=False, help="Size of each batch")
+PARSER.add_argument("--num_epochs", type=int, default=150000, help="How many epochs to train the model")
+PARSER.add_argument("--batch_size", type=int, default=128, help="Size of each batch")
 PARSER.add_argument("--log_device_placement", type=bool, default=False, help="Whether or not to print Tensorflow's "
 																			 "device placement")
 ARGS = PARSER.parse_args()
@@ -27,13 +27,14 @@ INITIAL_LEARNING_RATE = 0.1       # Initial learning rate.
 
 
 def train_net():
-	bIsTraining = tf.placeholder(tf.bool)
 	global_step = tf.train.get_or_create_global_step()
 
-	images_train, labels_train = nn_dataset.input_fn(True, ARGS.base_dir, ARGS.batch_size, None)
-	images_valid, labels_valid = nn_dataset.input_fn(False, ARGS.base_dir, ARGS.batch_size, None)
-	images = tf.cond(pred=bIsTraining, true_fn=lambda: images_train, false_fn=lambda: images_valid)
-	labels = tf.cond(pred=bIsTraining, true_fn=lambda: labels_train, false_fn=lambda: labels_valid)
+	with tf.device("/cpu:0"):
+		bIsTraining = tf.placeholder(tf.bool)
+		images_train, labels_train = nn_dataset.input_fn(True, ARGS.base_dir, ARGS.batch_size, None)
+		images_valid, labels_valid = nn_dataset.input_fn(False, ARGS.base_dir, ARGS.batch_size, None)
+		images = tf.cond(pred=bIsTraining, true_fn=lambda: images_train, false_fn=lambda: images_valid)
+		labels = tf.cond(pred=bIsTraining, true_fn=lambda: labels_train, false_fn=lambda: labels_valid)
 
 	logits = get_model(images, bIsTraining)
 
@@ -41,8 +42,9 @@ def train_net():
 	train_op = get_train_op(loss_op, global_step, ARGS)
 	accuracy_op = get_accuracy_op(labels, logits)
 
-	scaffold = tf.train.Scaffold(init_op=tf.global_variables_initializer(),
-								 local_init_op=tf.local_variables_initializer())
+	init_op = tf.global_variables_initializer()
+	local_init_op = tf.local_variables_initializer()
+	scaffold = tf.train.Scaffold(init_op=init_op, local_init_op=local_init_op)
 
 	class _LoggerHook(tf.train.SessionRunHook):
 		"""Logs loss and runtime."""
@@ -93,8 +95,9 @@ def test_model():
 	tf.reset_default_graph()
 
 	NUM_VALIDATION_IMGS = nn_dataset.NUM_IMAGES["validation"]
+	with tf.device("/cpu:0"):
+		images, labels = nn_dataset.input_fn(is_training=False, data_dir=ARGS.base_dir, batch_size=1, num_epochs=1)
 
-	images, labels = nn_dataset.input_fn(is_training=False, data_dir=ARGS.base_dir, batch_size=1, num_epochs=1)
 	bIsTraining = tf.placeholder(tf.bool)
 
 	logits = get_model(images, bIsTraining)
@@ -113,9 +116,8 @@ def test_model():
 		for i in range(NUM_VALIDATION_IMGS):
 			stdout.write("\rPredicting %d/%d" % (i+1, NUM_VALIDATION_IMGS))
 			sess.run(predict_op, feed_dict={bIsTraining: False})
-		stdout.write("\n")
 		num_correct = sess.run(total_correct_predictions)
-	stdout.write("Accuracy: %3.3f%%" % (100*num_correct/NUM_VALIDATION_IMGS))
+	stdout.write("\nAccuracy: %3.3f%%" % (100*num_correct/NUM_VALIDATION_IMGS))
 
 
 

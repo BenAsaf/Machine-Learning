@@ -14,7 +14,8 @@
 # ==============================================================================
 
 # I modified the code. I added the option for 'num_epochs=None' to repeat indefinitely during training or validation.
-# Also added the constant _LABEL to maybe allow Cifar100 dataset in the future. Not yet tested.
+# Added the _LABEL variable to define the number of bytes in the record to extend to cifar100.
+# Added more data augmentation such as: rot90, random order for brightness and contrast.
 
 import tensorflow as tf
 import os
@@ -28,18 +29,11 @@ _DEPTH = 3
 _LABEL = 2
 NUM_CLASSES = 100
 
-# We use a weight decay of 0.0002, which performs better than the 0.0001 that
-# was originally suggested.
-
 NUM_IMAGES = {
 	'train': 50000,
 	'validation': 10000,
 }
-#
-# def get_label_name(y):
-# 	# labels = ["airplane", "automobile", "bird", "cat", "deer", "dog", "frog", "horse", "ship", "truck"]
-#	  labels = ["truck", "ship", "horse", "frog", "dog", "deer", "cat", "bird", "automobile", "airplane"]
-# 	return labels[np.argmax(y)[0]]
+
 
 def maybe_download_and_extract(base_dir):
 	"""Download and extract the tarball from Alex's website."""
@@ -80,10 +74,17 @@ def record_dataset(filenames):
 	return tf.data.FixedLengthRecordDataset(filenames, record_bytes)
 
 
-
 def preprocess_image(image, is_training):
 	"""Preprocess a single image of layout [height, width, depth]."""
 	if is_training:
+		def rand_brightness_contrast(order, im):
+			if order == 0:
+				im = tf.image.random_brightness(im, max_delta=63)
+				return tf.image.random_contrast(im, lower=0.2, upper=1.8)
+			else:
+				im = tf.image.random_contrast(im, lower=0.2, upper=1.8)
+				return tf.image.random_brightness(im, max_delta=63)
+
 		# Resize the image to add four extra pixels on each side.
 		image = tf.image.resize_image_with_crop_or_pad(image, _HEIGHT+8, _WIDTH+8)
 
@@ -92,13 +93,14 @@ def preprocess_image(image, is_training):
 
 		# Randomly flip the image horizontally.
 		image = tf.image.random_flip_left_right(image)
+		# Randomly rotate the image counter clockwise by 90 degrees. k=0 no rot up-to k=3.
+		# image = tf.image.rot90(image, k=tf.random_uniform([], minval=0, maxval=3, dtype=tf.int32))
 
-		# Because these operations are not commutative, consider randomizing
-		# the order their operation.
-		# distorted_image = tf.image.random_brightness(distorted_image,
-		# 											 max_delta=63)
-		# distorted_image = tf.image.random_contrast(distorted_image,
-		# 										   lower=0.2, upper=1.8)
+		# Apply brightness and contrast in randomized order. Uniformly sample from {0,1} and cast to tf.bool
+		rand_order = tf.cast(tf.random_uniform([], minval=0, maxval=1, dtype=tf.int32), dtype=tf.bool)
+		# If rand_order=0, first apply brightness and then contrast, the opposite order if rand_order=1.
+		image = tf.cond(pred=rand_order, true_fn=lambda: rand_brightness_contrast(1, image),
+						false_fn=lambda: rand_brightness_contrast(0, image))
 
 	# Subtract off the mean and divide by the variance of the pixels.
 	image = tf.image.per_image_standardization(image)
