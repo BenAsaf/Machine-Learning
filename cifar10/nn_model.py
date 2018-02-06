@@ -50,7 +50,9 @@ def get_model(x, bIsTraining):
 
 		nn = tf.layers.flatten(nn)
 		nn = tf.layers.dropout(nn, rate=0.8, training=bIsTraining)
-		nn = tf.layers.dense(nn, units=nn.shape[-1])
+		nn = tf.layers.dense(nn, units=nn.shape[-1], activation=tf.nn.relu)
+		nn = tf.layers.dropout(nn, rate=0.8, training=bIsTraining)
+		nn = tf.layers.dense(nn, units=nn.shape[-1], activation=tf.nn.relu)
 		nn = tf.layers.dropout(nn, rate=0.5, training=bIsTraining)
 
 		nn = tf.layers.dense(nn, units=NUM_CLASSES)
@@ -59,7 +61,7 @@ def get_model(x, bIsTraining):
 		return tf.cond(bIsTraining, true_fn=lambda: nn, false_fn=lambda: logits)
 
 
-def get_loss_op(labels, logits, global_step):
+def get_loss_op(labels, logits):
 	loss_op = tf.nn.softmax_cross_entropy_with_logits_v2(labels=labels, logits=logits)
 	return tf.reduce_mean(loss_op)
 
@@ -75,19 +77,13 @@ def get_train_op(loss_op, global_step, ARGS):
 	# Variables that affect learning rate.
 	num_batches_per_epoch = NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN / ARGS.batch_size
 	decay_steps = int(num_batches_per_epoch * NUM_EPOCHS_PER_DECAY)
-
-	lr = tf.train.exponential_decay(INITIAL_LEARNING_RATE,
-									global_step,
-									decay_steps,
-									LEARNING_RATE_DECAY_FACTOR,
+	lr = tf.train.exponential_decay(INITIAL_LEARNING_RATE, global_step, decay_steps, LEARNING_RATE_DECAY_FACTOR,
 									staircase=True)
-
 	update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
 	opt = tf.train.GradientDescentOptimizer(lr)
 	with tf.control_dependencies(update_ops):
 		grads = opt.compute_gradients(loss_op)
 		apply_gradient_op = opt.apply_gradients(grads, global_step=global_step)
-
 	return apply_gradient_op
 
 
